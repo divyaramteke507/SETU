@@ -9,9 +9,23 @@ import os
 # ---------------------------------------------------------------------------
 # Database
 # ---------------------------------------------------------------------------
-DATABASE_URL = "sqlite:///./setu.db"
+DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./setu.db")
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 GAZETTEER_PATH = os.path.join(BASE_DIR, "gazetteer", "rampur.json")
+
+# ---------------------------------------------------------------------------
+# CORS — allowed origins for frontend communication
+# ---------------------------------------------------------------------------
+DEFAULT_ALLOWED_ORIGINS = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+]
+
+_raw_origins = os.getenv("ALLOWED_ORIGINS")
+if _raw_origins:
+    ALLOWED_ORIGINS = [orig.strip() for orig in _raw_origins.split(",") if orig.strip()]
+else:
+    ALLOWED_ORIGINS = DEFAULT_ALLOWED_ORIGINS
 
 # ---------------------------------------------------------------------------
 # Embedding model

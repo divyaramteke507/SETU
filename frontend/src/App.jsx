@@ -9,7 +9,9 @@ import {
   formatExtraction
 } from './utils/formatters'
 
-const API_BASE = 'http://127.0.0.1:8000/api'
+const API_BASE =
+  import.meta.env.VITE_API_BASE_URL ||
+  'http://127.0.0.1:8000/api'
 
 export default function App() {
   // Primary State
@@ -74,7 +76,7 @@ export default function App() {
       }
     } catch (err) {
       console.error(err)
-      setErrorBanner('Could not connect to SETU backend. Ensure the backend server is running at http://127.0.0.1:8000.')
+      setErrorBanner(`Could not connect to SETU backend. Ensure the backend server is running and accessible at ${API_BASE}.`)
     } finally {
       setLoading(false)
     }
@@ -116,7 +118,7 @@ export default function App() {
       } catch (err) {
         if (!ignore) {
           console.error(err)
-          setErrorBanner('Could not connect to SETU backend. Ensure the backend server is running at http://127.0.0.1:8000.')
+          setErrorBanner(`Could not connect to SETU backend. Ensure the backend server is running and accessible at ${API_BASE}.`)
         }
       }
     }

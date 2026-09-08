@@ -12,7 +12,7 @@ from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 
-from config import DEMO_MODE
+from config import DEMO_MODE, ALLOWED_ORIGINS
 from database import init_db, get_db
 from schemas import HealthResponse
 from models import Report, Incident
@@ -51,10 +51,10 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# CORS — allow frontend dev server
+# CORS — allow configured frontend origins (defaults to local dev)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
+    allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
