@@ -57,5 +57,10 @@ frontend/dist/
 frontend/.vite/
 .eslintcache
 
+# Release / Packaging
+release/
+model/
+
 # Logs
+logs/
 *.log

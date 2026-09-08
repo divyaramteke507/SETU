@@ -6,13 +6,14 @@ Provides the health endpoint, seeds the database on startup,
 and registers API routers.
 """
 
+import os
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 
-from config import DEMO_MODE, ALLOWED_ORIGINS
+from config import DEMO_MODE, ALLOWED_ORIGINS, BASE_DIR
 from database import init_db, get_db
 from schemas import HealthResponse
 from models import Report, Incident
@@ -83,12 +84,48 @@ def health_check(db: Session = Depends(get_db)):
     )
 
 
-@app.get("/", tags=["system"])
-def root():
-    """Root endpoint — API info."""
-    return {
-        "name": "SETU — Structured Emergency Bridge System",
-        "version": "0.1.0",
-        "demo_mode": DEMO_MODE,
-        "docs": "/docs",
-    }
+# ---------------------------------------------------------------------------
+# Root & Frontend Serving
+# ---------------------------------------------------------------------------
+
+if os.getenv("SETU_JUDGE_MODE") == "1":
+    dist_dir = os.getenv("FRONTEND_DIST_DIR", os.path.join(BASE_DIR, "..", "frontend", "dist"))
+    dist_dir = os.path.abspath(dist_dir)
+    if os.path.isdir(dist_dir):
+        from fastapi.staticfiles import StaticFiles
+        from fastapi.responses import FileResponse
+
+        assets_dir = os.path.join(dist_dir, "assets")
+        if os.path.isdir(assets_dir):
+            app.mount("/assets", StaticFiles(directory=assets_dir), name="static_assets")
+
+        @app.get("/", include_in_schema=False)
+        def serve_judge_root():
+            return FileResponse(os.path.join(dist_dir, "index.html"))
+
+        @app.get("/{file_name:path}", include_in_schema=False)
+        def serve_judge_static_or_spa(file_name: str):
+            file_path = os.path.join(dist_dir, file_name)
+            if os.path.isfile(file_path):
+                return FileResponse(file_path)
+            return FileResponse(os.path.join(dist_dir, "index.html"))
+    else:
+        @app.get("/", tags=["system"])
+        def root():
+            """Root endpoint — API info."""
+            return {
+                "name": "SETU — Structured Emergency Bridge System",
+                "version": "0.1.0",
+                "demo_mode": DEMO_MODE,
+                "docs": "/docs",
+            }
+else:
+    @app.get("/", tags=["system"])
+    def root():
+        """Root endpoint — API info."""
+        return {
+            "name": "SETU — Structured Emergency Bridge System",
+            "version": "0.1.0",
+            "demo_mode": DEMO_MODE,
+            "docs": "/docs",
+        }
