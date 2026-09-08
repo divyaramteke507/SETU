@@ -1,0 +1,61 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyc
+*$py.class
+*.egg-info/
+dist/
+build/
+*.egg
+.eggs/
+*.so
+venv/
+.venv/
+env/
+.env
+.env.*
+!.env.example
+backend/venv/
+backend/__pycache__/
+backend/*/__pycache__/
+backend/*/*/__pycache__/
+
+# Testing
+.pytest_cache/
+backend/.pytest_cache/
+htmlcov/
+.coverage
+coverage.xml
+
+# SQLite & Runtime databases
+*.db
+*.sqlite
+*.sqlite3
+backend/*.db
+backend/setu.db
+backend/test*.db
+
+# Sentence-transformers cache
+.cache/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Node / Frontend
+node_modules/
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+.eslintcache
+
+# Logs
+*.log

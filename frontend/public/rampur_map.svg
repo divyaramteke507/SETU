@@ -1,0 +1,185 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="800" height="600" role="img" aria-label="SETU Static Map — Rampur, India — 4 Emergency Zones">
+  <title>SETU — Rampur Emergency Map</title>
+  <desc>Static offline map showing 4 geographic zones in Rampur used for emergency incident tracking.</desc>
+
+  <defs>
+    <!-- Zone highlight fill -->
+    <radialGradient id="zone-glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="rgba(255,255,255,0.12)" />
+      <stop offset="100%" stop-color="rgba(255,255,255,0)" />
+    </radialGradient>
+
+    <!-- Water pattern for rivers/drains -->
+    <pattern id="water" patternUnits="userSpaceOnUse" width="12" height="12">
+      <rect width="12" height="12" fill="#1e3a5f"/>
+      <path d="M0 6 Q3 3, 6 6 Q9 9, 12 6" stroke="#2d5a8a" stroke-width="0.8" fill="none" opacity="0.6"/>
+    </pattern>
+
+    <!-- Road dash -->
+    <pattern id="road-minor" patternUnits="userSpaceOnUse" width="8" height="8">
+      <line x1="0" y1="4" x2="8" y2="4" stroke="#555" stroke-width="1" stroke-dasharray="3,3"/>
+    </pattern>
+  </defs>
+
+  <!-- Background -->
+  <rect width="800" height="600" fill="#1a1f2e" rx="8"/>
+
+  <!-- Map title bar -->
+  <rect x="0" y="0" width="800" height="36" fill="#141824" rx="8"/>
+  <rect x="0" y="20" width="800" height="16" fill="#141824"/>
+  <text x="16" y="24" font-family="Inter, system-ui, sans-serif" font-size="13" fill="#94a3b8" font-weight="600">
+    RAMPUR, UTTAR PRADESH — EMERGENCY ZONE MAP
+  </text>
+  <text x="784" y="24" font-family="Inter, system-ui, sans-serif" font-size="11" fill="#64748b" text-anchor="end">
+    OFFLINE · STATIC
+  </text>
+
+  <!-- Grid lines (subtle) -->
+  <g stroke="#2a3040" stroke-width="0.5" opacity="0.4">
+    <line x1="0" y1="136" x2="800" y2="136"/>
+    <line x1="0" y1="236" x2="800" y2="236"/>
+    <line x1="0" y1="336" x2="800" y2="336"/>
+    <line x1="0" y1="436" x2="800" y2="436"/>
+    <line x1="0" y1="536" x2="800" y2="536"/>
+    <line x1="160" y1="36" x2="160" y2="600"/>
+    <line x1="320" y1="36" x2="320" y2="600"/>
+    <line x1="480" y1="36" x2="480" y2="600"/>
+    <line x1="640" y1="36" x2="640" y2="600"/>
+  </g>
+
+  <!-- Main river / Nala (drain) -->
+  <path d="M0 380 Q120 340, 200 360 Q320 400, 440 350 Q560 300, 680 330 Q740 345, 800 320"
+        stroke="#1e3a5f" stroke-width="18" fill="none" opacity="0.7"/>
+  <path d="M0 380 Q120 340, 200 360 Q320 400, 440 350 Q560 300, 680 330 Q740 345, 800 320"
+        stroke="#2d5a8a" stroke-width="8" fill="none" opacity="0.5"/>
+  <text x="620" y="310" font-family="Inter, system-ui, sans-serif" font-size="10" fill="#3b82f6" opacity="0.6" transform="rotate(-8, 620, 310)">
+    Kosi Nala
+  </text>
+
+  <!-- Secondary drain -->
+  <path d="M400 36 Q380 150, 420 250 Q440 320, 440 350"
+        stroke="#1e3a5f" stroke-width="8" fill="none" opacity="0.5"/>
+
+  <!-- Major roads -->
+  <g stroke="#3f4555" stroke-width="3" fill="none" opacity="0.8">
+    <!-- NH-24 -->
+    <line x1="0" y1="240" x2="800" y2="200"/>
+    <!-- Main city road N-S -->
+    <line x1="380" y1="36" x2="400" y2="580"/>
+    <!-- Cross road -->
+    <line x1="100" y1="460" x2="700" y2="440"/>
+  </g>
+  <text x="760" y="195" font-family="Inter, system-ui, sans-serif" font-size="9" fill="#64748b" opacity="0.6">NH-24</text>
+
+  <!-- ================================================================== -->
+  <!-- ZONE 1: Civil Lines (center) -->
+  <!-- ================================================================== -->
+  <g id="zone-civil-lines" data-location-id="civil_lines">
+    <circle cx="400" cy="200" r="60" fill="none" stroke="#3b82f6" stroke-width="2" stroke-dasharray="6,3" opacity="0.6"/>
+    <circle cx="400" cy="200" r="60" fill="url(#zone-glow)" opacity="0.3"/>
+    <!-- Zone label -->
+    <rect x="345" y="150" width="110" height="22" rx="4" fill="#1e293b" stroke="#3b82f6" stroke-width="1" opacity="0.9"/>
+    <text x="400" y="165" font-family="Inter, system-ui, sans-serif" font-size="11" fill="#93c5fd" text-anchor="middle" font-weight="600">
+      CIVIL LINES
+    </text>
+    <!-- Marker dot -->
+    <circle cx="400" cy="200" r="5" fill="#3b82f6" opacity="0.8"/>
+    <circle cx="400" cy="200" r="8" fill="none" stroke="#3b82f6" stroke-width="1.5" opacity="0.4"/>
+    <!-- Coordinates -->
+    <text x="400" y="218" font-family="monospace" font-size="8" fill="#64748b" text-anchor="middle">
+      28.795°N 79.025°E
+    </text>
+  </g>
+
+  <!-- ================================================================== -->
+  <!-- ZONE 2: Kotwali (north-west) -->
+  <!-- ================================================================== -->
+  <g id="zone-kotwali" data-location-id="kotwali">
+    <circle cx="220" cy="130" r="50" fill="none" stroke="#ef4444" stroke-width="2" stroke-dasharray="6,3" opacity="0.6"/>
+    <circle cx="220" cy="130" r="50" fill="url(#zone-glow)" opacity="0.3"/>
+    <rect x="172" y="82" width="96" height="22" rx="4" fill="#1e293b" stroke="#ef4444" stroke-width="1" opacity="0.9"/>
+    <text x="220" y="97" font-family="Inter, system-ui, sans-serif" font-size="11" fill="#fca5a5" text-anchor="middle" font-weight="600">
+      KOTWALI
+    </text>
+    <circle cx="220" cy="130" r="5" fill="#ef4444" opacity="0.8"/>
+    <circle cx="220" cy="130" r="8" fill="none" stroke="#ef4444" stroke-width="1.5" opacity="0.4"/>
+    <text x="220" y="148" font-family="monospace" font-size="8" fill="#64748b" text-anchor="middle">
+      28.801°N 79.018°E
+    </text>
+    <!-- Police station icon hint -->
+    <rect x="240" y="120" width="12" height="14" rx="1" fill="none" stroke="#64748b" stroke-width="0.8" opacity="0.5"/>
+    <text x="246" y="132" font-family="Inter, system-ui, sans-serif" font-size="7" fill="#64748b" text-anchor="middle" opacity="0.5">P</text>
+  </g>
+
+  <!-- ================================================================== -->
+  <!-- ZONE 3: Bilaspur Chowk (south-east) -->
+  <!-- ================================================================== -->
+  <g id="zone-bilaspur-chowk" data-location-id="bilaspur_chowk">
+    <circle cx="580" cy="440" r="45" fill="none" stroke="#f59e0b" stroke-width="2" stroke-dasharray="6,3" opacity="0.6"/>
+    <circle cx="580" cy="440" r="45" fill="url(#zone-glow)" opacity="0.3"/>
+    <rect x="510" y="395" width="140" height="22" rx="4" fill="#1e293b" stroke="#f59e0b" stroke-width="1" opacity="0.9"/>
+    <text x="580" y="410" font-family="Inter, system-ui, sans-serif" font-size="11" fill="#fcd34d" text-anchor="middle" font-weight="600">
+      BILASPUR CHOWK
+    </text>
+    <circle cx="580" cy="440" r="5" fill="#f59e0b" opacity="0.8"/>
+    <circle cx="580" cy="440" r="8" fill="none" stroke="#f59e0b" stroke-width="1.5" opacity="0.4"/>
+    <text x="580" y="458" font-family="monospace" font-size="8" fill="#64748b" text-anchor="middle">
+      28.789°N 79.032°E
+    </text>
+    <!-- Intersection cross hint -->
+    <line x1="570" y1="440" x2="590" y2="440" stroke="#64748b" stroke-width="0.8" opacity="0.4"/>
+    <line x1="580" y1="430" x2="580" y2="450" stroke="#64748b" stroke-width="0.8" opacity="0.4"/>
+  </g>
+
+  <!-- ================================================================== -->
+  <!-- ZONE 4: Naya Mohalla (west) -->
+  <!-- ================================================================== -->
+  <g id="zone-naya-mohalla" data-location-id="naya_mohalla">
+    <circle cx="160" cy="400" r="55" fill="none" stroke="#8b5cf6" stroke-width="2" stroke-dasharray="6,3" opacity="0.6"/>
+    <circle cx="160" cy="400" r="55" fill="url(#zone-glow)" opacity="0.3"/>
+    <rect x="100" y="348" width="120" height="22" rx="4" fill="#1e293b" stroke="#8b5cf6" stroke-width="1" opacity="0.9"/>
+    <text x="160" y="363" font-family="Inter, system-ui, sans-serif" font-size="11" fill="#c4b5fd" text-anchor="middle" font-weight="600">
+      NAYA MOHALLA
+    </text>
+    <circle cx="160" cy="400" r="5" fill="#8b5cf6" opacity="0.8"/>
+    <circle cx="160" cy="400" r="8" fill="none" stroke="#8b5cf6" stroke-width="1.5" opacity="0.4"/>
+    <text x="160" y="418" font-family="monospace" font-size="8" fill="#64748b" text-anchor="middle">
+      28.793°N 79.010°E
+    </text>
+  </g>
+
+  <!-- ================================================================== -->
+  <!-- Legend -->
+  <!-- ================================================================== -->
+  <g transform="translate(620, 50)">
+    <rect x="0" y="0" width="160" height="120" rx="6" fill="#141824" stroke="#2a3040" stroke-width="1" opacity="0.95"/>
+    <text x="12" y="20" font-family="Inter, system-ui, sans-serif" font-size="10" fill="#94a3b8" font-weight="600">INCIDENT ZONES</text>
+    <line x1="12" y1="28" x2="148" y2="28" stroke="#2a3040" stroke-width="0.5"/>
+
+    <circle cx="22" cy="44" r="4" fill="#3b82f6"/>
+    <text x="34" y="48" font-family="Inter, system-ui, sans-serif" font-size="9" fill="#cbd5e1">Civil Lines</text>
+
+    <circle cx="22" cy="64" r="4" fill="#ef4444"/>
+    <text x="34" y="68" font-family="Inter, system-ui, sans-serif" font-size="9" fill="#cbd5e1">Kotwali</text>
+
+    <circle cx="22" cy="84" r="4" fill="#f59e0b"/>
+    <text x="34" y="88" font-family="Inter, system-ui, sans-serif" font-size="9" fill="#cbd5e1">Bilaspur Chowk</text>
+
+    <circle cx="22" cy="104" r="4" fill="#8b5cf6"/>
+    <text x="34" y="108" font-family="Inter, system-ui, sans-serif" font-size="9" fill="#cbd5e1">Naya Mohalla</text>
+  </g>
+
+  <!-- Scale bar -->
+  <g transform="translate(16, 570)">
+    <line x1="0" y1="0" x2="80" y2="0" stroke="#64748b" stroke-width="1.5"/>
+    <line x1="0" y1="-4" x2="0" y2="4" stroke="#64748b" stroke-width="1"/>
+    <line x1="80" y1="-4" x2="80" y2="4" stroke="#64748b" stroke-width="1"/>
+    <text x="40" y="14" font-family="Inter, system-ui, sans-serif" font-size="9" fill="#64748b" text-anchor="middle">~1 km (approx)</text>
+  </g>
+
+  <!-- North arrow -->
+  <g transform="translate(760, 560)">
+    <polygon points="0,-16 -5,0 5,0" fill="#64748b" opacity="0.6"/>
+    <text x="0" y="-20" font-family="Inter, system-ui, sans-serif" font-size="9" fill="#64748b" text-anchor="middle" font-weight="600">N</text>
+  </g>
+</svg>

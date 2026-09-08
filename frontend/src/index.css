@@ -1,0 +1,161 @@
+/*
+  SETU Design System — Phase 9.1 Premium Visual Refinement
+  Apple-level restraint, precision typography, generous whitespace, calm hierarchy.
+  100% offline with zero external network dependencies.
+*/
+
+/* ---- Reset ---- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* ---- Design Tokens ---- */
+:root {
+  /* --- Surfaces (Quiet, Layered Neutral Graphite) --- */
+  --color-bg-base:          #080a0f; /* Deepest void background */
+  --color-bg-surface:       #0d1118; /* Primary container surface */
+  --color-bg-subtle:        #121721; /* Secondary surface / queue background */
+  --color-bg-card:          #161e2b; /* Quiet card surface */
+  --color-bg-card-hover:    #1c2637; /* Gentle hover elevation */
+  --color-bg-active:        #1b273b; /* Active selection surface */
+  --color-bg-float:         #202d44; /* Popover / modal elevated surface */
+
+  /* --- Hairline Precision Borders --- */
+  --color-border-hairline:  rgba(255, 255, 255, 0.06);
+  --color-border-subtle:    rgba(255, 255, 255, 0.10);
+  --color-border-focus:     #38bdf8;
+  --color-border-active:    rgba(56, 189, 248, 0.45);
+
+  /* --- Text Hierarchy (High Contrast, Clean Weights) --- */
+  --color-text-title:       #ffffff;
+  --color-text-primary:     #f1f5f9;
+  --color-text-secondary:   #94a3b8;
+  --color-text-muted:       #64748b;
+  --color-text-dim:         #475569;
+
+  /* --- Semantic Color System (Strict & Restrained) --- */
+  /* Red = Critical */
+  --color-critical:         #ef4444;
+  --color-critical-tint:    rgba(239, 68, 68, 0.10);
+  --color-critical-border:  rgba(239, 68, 68, 0.28);
+  --color-critical-text:    #fca5a5;
+
+  /* Orange = High */
+  --color-high:             #f97316;
+  --color-high-tint:        rgba(249, 115, 22, 0.10);
+  --color-high-border:      rgba(249, 115, 22, 0.28);
+  --color-high-text:        #fdba74;
+
+  /* Yellow/Amber = Medium Urgency */
+  --color-medium:           #eab308;
+  --color-medium-tint:      rgba(234, 179, 8, 0.10);
+  --color-medium-border:    rgba(234, 179, 8, 0.28);
+  --color-medium-text:      #fde047;
+
+  /* Blue = Low Urgency / System Accent */
+  --color-low:              #38bdf8;
+  --color-low-tint:         rgba(56, 189, 248, 0.10);
+  --color-low-border:       rgba(56, 189, 248, 0.28);
+  --color-low-text:         #bae6fd;
+
+  /* Green = Verified */
+  --color-verified:         #10b981;
+  --color-verified-tint:    rgba(16, 185, 129, 0.10);
+  --color-verified-border:  rgba(16, 185, 129, 0.28);
+  --color-verified-text:    #6ee7b7;
+
+  /* Crimson = Rejected */
+  --color-rejected:         #ef4444;
+  --color-rejected-tint:    rgba(239, 68, 68, 0.10);
+  --color-rejected-border:  rgba(239, 68, 68, 0.28);
+  --color-rejected-text:    #fca5a5;
+
+  /* Gray = Unverified */
+  --color-unverified:       #94a3b8;
+  --color-unverified-tint:  rgba(148, 163, 184, 0.08);
+  --color-unverified-border:rgba(148, 163, 184, 0.22);
+  --color-unverified-text:  #cbd5e1;
+
+  /* Amber = Contradiction */
+  --color-contradiction:        #f59e0b;
+  --color-contradiction-tint:   rgba(245, 158, 11, 0.08);
+  --color-contradiction-border: rgba(245, 158, 11, 0.30);
+  --color-contradiction-text:   #fde68a;
+
+  /* System Blue Action */
+  --color-accent:           #0284c7;
+  --color-accent-hover:     #0369a1;
+
+  /* --- Typography Scale (San Francisco / Segoe / System fallbacks) --- */
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "SF Mono", ui-monospace, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+
+  --text-2xs:   0.6875rem;  /* 11px */
+  --text-xs:    0.75rem;    /* 12px */
+  --text-sm:    0.8125rem;  /* 13px */
+  --text-base:  0.875rem;   /* 14px */
+  --text-md:    0.9375rem;  /* 15px */
+  --text-lg:    1.0625rem;  /* 17px */
+  --text-xl:    1.25rem;    /* 20px */
+  --text-2xl:   1.625rem;   /* 26px */
+  --text-3xl:   2.25rem;    /* 36px */
+
+  /* --- Radii & Transitions --- */
+  --radius-xs:  3px;
+  --radius-sm:  6px;
+  --radius-md:  8px;
+  --radius-lg:  12px;
+  --radius-xl:  16px;
+
+  --ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
+  --transition-fast: 150ms ease;
+  --transition-smooth: 250ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ---- Base Document ---- */
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: var(--color-bg-base);
+  color: var(--color-text-primary);
+}
+
+body {
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  line-height: 1.5;
+  height: 100%;
+  max-height: 100%;
+  overflow: hidden;
+  background-color: var(--color-bg-base);
+  color: var(--color-text-primary);
+}
+
+#root {
+  height: 100%;
+  max-height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ---- Custom Scrollbars (Quiet & Unobtrusive) ---- */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.22);
+}

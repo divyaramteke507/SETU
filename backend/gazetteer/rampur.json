@@ -1,0 +1,89 @@
+{
+  "locations": [
+    {
+      "location_id": "civil_lines",
+      "name_en": "Civil Lines",
+      "name_hi": "सिविल लाइन्स",
+      "name_hi_latn": "Civil Lines",
+      "aliases": [
+        "civil lines",
+        "civil line",
+        "sivil lains",
+        "सिविल लाइन",
+        "सिविल लाइन्स",
+        "civil lines area",
+        "civil lines rampur"
+      ],
+      "lat": 28.7950,
+      "lon": 79.0250,
+      "radius_m": 500,
+      "description": "Central residential and commercial area of Rampur"
+    },
+    {
+      "location_id": "kotwali",
+      "name_en": "Kotwali",
+      "name_hi": "कोतवाली",
+      "name_hi_latn": "Kotwali",
+      "aliases": [
+        "kotwali",
+        "kotwali thana",
+        "kotwali police station",
+        "kotwali area",
+        "कोतवाली",
+        "कोतवाली थाना",
+        "kotwali ke paas",
+        "near kotwali"
+      ],
+      "lat": 28.8010,
+      "lon": 79.0180,
+      "radius_m": 400,
+      "description": "Area around Kotwali police station, north-west Rampur"
+    },
+    {
+      "location_id": "bilaspur_chowk",
+      "name_en": "Bilaspur Chowk",
+      "name_hi": "बिलासपुर चौक",
+      "name_hi_latn": "Bilaspur Chowk",
+      "aliases": [
+        "bilaspur chowk",
+        "bilaspur chowk intersection",
+        "bilaspur chauk",
+        "बिलासपुर चौक",
+        "बिलासपुर चौराहा",
+        "bilaspur chowk pe",
+        "near bilaspur chowk"
+      ],
+      "lat": 28.7890,
+      "lon": 79.0320,
+      "radius_m": 350,
+      "description": "Major intersection in south-east Rampur"
+    },
+    {
+      "location_id": "naya_mohalla",
+      "name_en": "Naya Mohalla",
+      "name_hi": "नया मोहल्ला",
+      "name_hi_latn": "Naya Mohalla",
+      "aliases": [
+        "naya mohalla",
+        "naya mohalle",
+        "naya mohalle mein",
+        "नया मोहल्ला",
+        "नया मोहल्ले",
+        "naya mohalla area",
+        "naya mohalle mein"
+      ],
+      "lat": 28.7930,
+      "lon": 79.0100,
+      "radius_m": 450,
+      "description": "Residential neighborhood in western Rampur"
+    }
+  ],
+  "metadata": {
+    "city": "Rampur",
+    "state": "Uttar Pradesh",
+    "country": "India",
+    "center_lat": 28.7945,
+    "center_lon": 79.0213,
+    "notes": "Coordinates are approximate and fictional for SIH demo purposes."
+  }
+}
