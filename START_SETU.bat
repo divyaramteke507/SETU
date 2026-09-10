@@ -25,42 +25,61 @@ exit /b 1
 :backend_files_ok
 
 if exist "%BASE_DIR%\frontend\dist\index.html" goto :frontend_files_ok
+echo ================================================================================
 echo [SETU ERROR] Frontend production bundle not found at:
 echo   %BASE_DIR%\frontend\dist\index.html
-echo Please run "npm run build" in frontend or use the prepared release package.
+echo.
+echo NOTE:
+echo If you are testing this on another Windows laptop (without Node.js / npm):
+echo   You should use the prepared standalone demo package:
+echo     release\SETU-SIH-DEMO\  (or SETU-SIH-DEMO.zip)
+echo   which already includes the pre-built frontend, Python runtime, and AI model.
+echo.
+echo If you are developing on this machine:
+echo   Please run "npm run build" inside the "frontend" directory first.
+echo ================================================================================
 echo.
 pause
 exit /b 1
 :frontend_files_ok
 
-REM 3. Detect Bundled Zero-Install Python Runtime
+REM 3. Detect Bundled Zero-Install Python Runtime or local venv
 set "PYTHON_EXE=%BASE_DIR%\runtime\python.exe"
+if exist "%PYTHON_EXE%" (
+    set "PYTHON_ARGS=-s -m uvicorn main:app --host 127.0.0.1 --port 8000"
+    goto :runtime_ready
+)
 
-if exist "%PYTHON_EXE%" goto :runtime_ready
+set "PYTHON_EXE=%BASE_DIR%\backend\venv\Scripts\python.exe"
+if exist "%PYTHON_EXE%" (
+    set "PYTHON_ARGS=-m uvicorn main:app --host 127.0.0.1 --port 8000"
+    goto :runtime_ready
+)
 
-echo [SETU ERROR] Bundled portable Python runtime not found at:
-echo   %PYTHON_EXE%
-echo This zero-install judge package requires the bundled runtime directory.
-echo Please ensure the release archive is extracted completely.
+where python >nul 2>&1
+if not errorlevel 1 (
+    set "PYTHON_EXE=python"
+    set "PYTHON_ARGS=-m uvicorn main:app --host 127.0.0.1 --port 8000"
+    goto :runtime_ready
+)
+
+echo [SETU ERROR] Neither bundled portable runtime nor virtualenv Python found.
+echo Checked:
+echo   %BASE_DIR%\runtime\python.exe
+echo   %BASE_DIR%\backend\venv\Scripts\python.exe
 echo.
 pause
 exit /b 1
 
 :runtime_ready
-set "PYTHON_ARGS=-s -m uvicorn main:app --host 127.0.0.1 --port 8000"
 
 REM 4. Detect and configure offline embedding model
 set "HF_HOME=%BASE_DIR%\model"
-
 if exist "%HF_HOME%\hub\models--sentence-transformers--paraphrase-multilingual-MiniLM-L12-v2" goto :model_ready
 if exist "%HF_HOME%\models--sentence-transformers--paraphrase-multilingual-MiniLM-L12-v2" goto :model_ready
 
-echo [SETU ERROR] Offline embedding model not found in package.
-echo Expected in:
-echo   %HF_HOME%\hub\models--sentence-transformers--paraphrase-multilingual-MiniLM-L12-v2
-echo.
-pause
-exit /b 1
+REM Model folder not in root (normal in dev workspace; using local user cache)
+set "HF_HOME="
 
 :model_ready
 
@@ -102,7 +121,7 @@ set "SETU_JUDGE_MODE=1"
 set "PYTHONUNBUFFERED=1"
 set "FRONTEND_DIST_DIR=%BASE_DIR%\frontend\dist"
 
-powershell -NoProfile -ExecutionPolicy Bypass -Command "$env:HF_HOME = '%HF_HOME%'; $env:SETU_JUDGE_MODE = '1'; $env:FRONTEND_DIST_DIR = '%FRONTEND_DIST_DIR%'; $p = Start-Process -FilePath '%PYTHON_EXE%' -ArgumentList '%PYTHON_ARGS%' -WorkingDirectory '%BASE_DIR%\backend' -RedirectStandardOutput '%LOG_OUT%' -RedirectStandardError '%LOG_ERR%' -PassThru; [System.IO.File]::WriteAllText('%PID_FILE%', $p.Id.ToString())"
+powershell -NoProfile -ExecutionPolicy Bypass -Command "if ('%HF_HOME%' -ne '') { $env:HF_HOME = '%HF_HOME%' }; $env:SETU_JUDGE_MODE = '1'; $env:FRONTEND_DIST_DIR = '%FRONTEND_DIST_DIR%'; $p = Start-Process -FilePath '%PYTHON_EXE%' -ArgumentList '%PYTHON_ARGS%' -WorkingDirectory '%BASE_DIR%\backend' -RedirectStandardOutput '%LOG_OUT%' -RedirectStandardError '%LOG_ERR%' -PassThru; [System.IO.File]::WriteAllText('%PID_FILE%', $p.Id.ToString())"
 
 if exist "%PID_FILE%" goto :pid_saved
 echo [SETU] Backend failed to start.

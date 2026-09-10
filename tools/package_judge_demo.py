@@ -22,6 +22,7 @@ Excluded:
 
 import os
 import shutil
+import subprocess
 import sys
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -60,6 +61,11 @@ def copy_backend():
         if os.path.isfile(s):
             shutil.copy2(s, os.path.join(dst_backend, fname))
 
+    # Clean any stale database files in dst_backend
+    for item in os.listdir(dst_backend):
+        if item.endswith((".db", ".sqlite", ".sqlite3")):
+            os.remove(os.path.join(dst_backend, item))
+
     # Directories
     def ignore_caches(src, names):
         return [n for n in names if n in {"__pycache__", ".pytest_cache", "venv", ".venv"} or n.endswith((".db", ".pyc"))]
@@ -73,22 +79,60 @@ def copy_backend():
 
 
 def copy_frontend():
-    print_step("Copying built frontend distribution (frontend/dist)...")
-    src_dist = os.path.join(BASE_DIR, "frontend", "dist")
-    dst_dist = os.path.join(RELEASE_DIR, "frontend", "dist")
+    print_step("Ensuring frontend production bundle is built...")
+    frontend_dir = os.path.join(BASE_DIR, "frontend")
+    src_dist = os.path.join(frontend_dir, "dist")
 
-    if not os.path.isdir(src_dist):
+    npm_bin = shutil.which("npm.cmd") or shutil.which("npm")
+    if npm_bin:
+        print_step("Building frontend bundle with 'npm run build'...")
+        res = subprocess.run(
+            [npm_bin, "run", "build"],
+            cwd=frontend_dir,
+            capture_output=True,
+            text=True,
+            shell=True,
+        )
+        if res.returncode != 0:
+            print_step(f"WARNING: npm run build exited with code {res.returncode}:\n{res.stderr}")
+        else:
+            print_step("Frontend production build completed successfully.")
+
+    index_html = os.path.join(src_dist, "index.html")
+    if not os.path.isfile(index_html):
         raise RuntimeError(f"Frontend dist not found at {src_dist}. Run 'npm run build' first.")
+
+    with open(index_html, "r", encoding="utf-8") as f:
+        html_content = f.read()
+
+    assets_dir = os.path.join(src_dist, "assets")
+    if not os.path.isdir(assets_dir) or not os.listdir(assets_dir):
+        raise RuntimeError(f"Frontend dist assets directory missing or empty at {assets_dir}.")
+
+    if "index-" not in html_content:
+        raise RuntimeError(f"Frontend dist index.html does not contain valid asset references:\n{html_content}")
+
+    print_step("Copying built frontend distribution (frontend/dist)...")
+    dst_dist = os.path.join(RELEASE_DIR, "frontend", "dist")
 
     if os.path.isdir(dst_dist):
         shutil.rmtree(dst_dist)
     shutil.copytree(src_dist, dst_dist)
+
+    dst_index = os.path.join(dst_dist, "index.html")
+    if not os.path.isfile(dst_index):
+        raise RuntimeError(f"Failed to copy index.html to release at {dst_index}.")
+
+    print_step(f"Frontend bundle copied successfully ({len(os.listdir(dst_dist))} root items).")
 
 
 def copy_launchers():
     print_step("Copying launchers and judge documentation...")
     shutil.copy2(os.path.join(BASE_DIR, "START_SETU.bat"), os.path.join(RELEASE_DIR, "START_SETU.bat"))
     shutil.copy2(os.path.join(BASE_DIR, "README_JUDGE.txt"), os.path.join(RELEASE_DIR, "README_JUDGE.txt"))
+    judge_md = os.path.join(BASE_DIR, "README_JUDGE.md")
+    if os.path.isfile(judge_md):
+        shutil.copy2(judge_md, os.path.join(RELEASE_DIR, "README_JUDGE.md"))
 
 
 def copy_offline_model(include_model: bool = True):
@@ -180,7 +224,14 @@ def copy_runtime():
         shutil.rmtree(old_venv)
 
 
-def build_package(bundle_model: bool = True):
+def create_zip_archive():
+    zip_base = os.path.join(BASE_DIR, "release", "SETU-SIH-DEMO")
+    print_step(f"Creating distributable archive: {zip_base}.zip (may take 20-30s)...")
+    shutil.make_archive(zip_base, "zip", root_dir=os.path.join(BASE_DIR, "release"), base_dir="SETU-SIH-DEMO")
+    print_step(f"Archive created successfully: {zip_base}.zip")
+
+
+def build_package(bundle_model: bool = True, make_zip: bool = False):
     print("=" * 70)
     print("SETU — Building Offline SIH Judge Demo Package (Zero-Install)")
     print(f"Destination: {RELEASE_DIR}")
@@ -193,13 +244,19 @@ def build_package(bundle_model: bool = True):
     copy_offline_model(include_model=bundle_model)
     copy_runtime()
 
+    if make_zip:
+        create_zip_archive()
+
     print("=" * 70)
     print("[SUCCESS] Zero-Install Judge Demo Package assembled successfully!")
     print(f"Location: {RELEASE_DIR}")
+    if make_zip:
+        print(f"Archive:  {os.path.join(BASE_DIR, 'release', 'SETU-SIH-DEMO.zip')}")
     print("To launch: Double-click START_SETU.bat inside that folder.")
     print("=" * 70)
 
 
 if __name__ == "__main__":
     bundle = "--no-model" not in sys.argv
-    build_package(bundle_model=bundle)
+    create_zip = "--zip" in sys.argv
+    build_package(bundle_model=bundle, make_zip=create_zip)

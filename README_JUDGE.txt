@@ -2,12 +2,17 @@
 SETU — Structured Emergency Bridge System
 SIH 2026 Disaster Management Demo (Problem Statement 26206)
 Tagline: "Bridging Chaotic Emergency Reports to Structured Incident Intelligence"
+Team: DeLuQy · Repository: https://github.com/divyaramteke507/SETU
 ================================================================================
+
+Zero-Install Demo Package:
+- File: SETU-SIH-DEMO.zip (~711 MB)
+- Official Distribution: https://drive.google.com/drive/folders/1rDSoWYNGWK5bJQcXQCb6ceBJOlAFftHO?usp=sharing
 
 System Requirements:
 - Windows 10 or Windows 11 (64-bit)
+- Zero host dependencies (No Python, No Node.js/npm, No Git required)
 - No internet connection required (100% offline-first execution)
-- No Node.js or npm required
 
 --------------------------------------------------------------------------------
 HOW TO START THE DEMO
