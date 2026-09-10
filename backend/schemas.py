@@ -138,6 +138,9 @@ class LocationResolution(BaseModel):
     match_score: Optional[float] = None         # similarity score for fuzzy match (0.0–1.0)
     candidates: list[LocationCandidate] = Field(default_factory=list)
     explanation: Optional[str] = None
+    location_conflict: bool = False
+    location_conflict_text: Optional[str] = None
+    location_conflict_distance_m: Optional[float] = None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -400,6 +403,9 @@ class ReportDetailOut(BaseModel):
     geo_confidence: float = 0.0
     processed: bool = False
     match_score: Optional[float] = None
+    location_conflict: bool = False
+    location_conflict_text: Optional[str] = None
+    location_conflict_distance_m: Optional[float] = None
     extractions: list[ExtractionField] = Field(default_factory=list)
 
     model_config = ConfigDict(from_attributes=True)
@@ -429,6 +435,9 @@ class IncidentDetailOut(BaseModel):
     related_incident_ids: list[str] = Field(default_factory=list)
     reports: list[ReportDetailOut] = Field(default_factory=list)
     audit_logs: list[AuditLogOut] = Field(default_factory=list)
+    location_conflict: bool = False
+    location_conflict_text: Optional[str] = None
+    location_conflict_distance_m: Optional[float] = None
 
     model_config = ConfigDict(from_attributes=True)
 

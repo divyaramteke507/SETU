@@ -37,10 +37,21 @@ from config import (
     GEO_CONFIDENCE_EXACT,
     GEO_CONFIDENCE_GPS,
     GEO_CONFIDENCE_UNRESOLVED,
+    GEO_MAX_DISTANCE_M,
     LOCATION_AMBIGUITY_DELTA,
     LOCATION_FUZZY_THRESHOLD,
 )
 from schemas import LocationCandidate, LocationResolution
+
+
+def _haversine_distance_m(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
+    """Calculate great-circle distance in meters between two lat/lon points using Haversine."""
+    R = 6371000.0  # Earth radius in meters
+    phi1, phi2 = math.radians(lat1), math.radians(lat2)
+    dphi = math.radians(lat2 - lat1)
+    dlam = math.radians(lon2 - lon1)
+    a = math.sin(dphi / 2.0) ** 2 + math.cos(phi1) * math.cos(phi2) * math.sin(dlam / 2.0) ** 2
+    return R * 2.0 * math.atan2(math.sqrt(a), math.sqrt(1.0 - a))
 
 
 # Module-level gazetteer cache
@@ -389,6 +400,50 @@ def resolve_location(
     if validate_coordinates(gps_lat, gps_lon):
         lat_val = float(gps_lat)
         lon_val = float(gps_lon)
+
+        # P0-4: Check for GPS vs text-implied location conflict
+        loc_conflict = False
+        loc_conflict_text = None
+        loc_conflict_dist = None
+        explanation = f"Direct GPS coordinates verified (lat={lat_val:.4f}, lon={lon_val:.4f})"
+
+        if clean_raw:
+            gaz = gazetteer if gazetteer is not None else load_gazetteer(gazetteer_path)
+            exact_res = exact_gazetteer_match(clean_raw, gaz)
+            text_loc = None
+            if exact_res is not None:
+                text_loc = exact_res[0]
+            else:
+                fuzzy_loc, _, _, is_ambig = fuzzy_gazetteer_match(
+                    clean_raw,
+                    gaz,
+                    threshold=LOCATION_FUZZY_THRESHOLD,
+                    ambiguity_delta=LOCATION_AMBIGUITY_DELTA,
+                )
+                if not is_ambig and fuzzy_loc is not None:
+                    text_loc = fuzzy_loc
+
+            if text_loc is not None:
+                t_lat = float(text_loc["lat"])
+                t_lon = float(text_loc["lon"])
+                t_name = text_loc.get("name_en", text_loc.get("location_id", clean_raw))
+                dist_m = _haversine_distance_m(lat_val, lon_val, t_lat, t_lon)
+
+                if dist_m >= GEO_MAX_DISTANCE_M:
+                    loc_conflict = True
+                    loc_conflict_text = f"{t_name} ({t_lat:.4f}, {t_lon:.4f})"
+                    loc_conflict_dist = dist_m
+                    explanation = (
+                        f"Direct GPS coordinates verified (lat={lat_val:.4f}, lon={lon_val:.4f}). "
+                        f"CONFLICT WARNING: Text location '{clean_raw}' implies {t_name} "
+                        f"(~{dist_m/1000:.1f} km away)."
+                    )
+                else:
+                    explanation = (
+                        f"Direct GPS coordinates verified (lat={lat_val:.4f}, lon={lon_val:.4f}). "
+                        f"Verified consistent with text '{clean_raw}'."
+                    )
+
         return LocationResolution(
             location_resolved=True,
             location_raw=clean_raw,
@@ -400,7 +455,10 @@ def resolve_location(
             resolution_method="gps",
             match_score=None,
             candidates=[],
-            explanation=f"Direct GPS coordinates verified (lat={lat_val:.4f}, lon={lon_val:.4f})",
+            explanation=explanation,
+            location_conflict=loc_conflict,
+            location_conflict_text=loc_conflict_text,
+            location_conflict_distance_m=loc_conflict_dist,
         )
 
     # If coordinates were provided but invalid, log in explanation and continue

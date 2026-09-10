@@ -70,7 +70,7 @@ INCIDENT_TYPE_PATTERNS: dict[str, list[dict]] = {
     "rescue_needed": [
         {"re": r"\brescue\b", "lang": "en", "conf": 0.90},
         {"re": r"\btrapped\b", "lang": "en", "conf": 0.90},
-        {"re": r"\b(?:people|family|someone)\s+stuck\b", "lang": "en", "conf": 0.85},
+        {"re": r"\b(?:people|persons?|family|families|someone|residents?)\s+(?:is|are|was|were|got)?\s*stuck\b", "lang": "en", "conf": 0.85},
         {"re": r"\bscreaming\s+for\s+help\b", "lang": "en", "conf": 0.95},
         {"re": r"\bbachao\b", "lang": "hi-Latn", "conf": 0.90},
         {"re": r"\blog\s+phase\b", "lang": "hi-Latn", "conf": 0.85},
@@ -79,9 +79,10 @@ INCIDENT_TYPE_PATTERNS: dict[str, list[dict]] = {
         {"re": r"मदद\s*भेजो", "lang": "hi", "conf": 0.85},
     ],
     "road_blocked": [
-        {"re": r"\broad\s+(?:completely\s+)?blocked\b", "lang": "en", "conf": 0.90},
+        {"re": r"\broads?\s+(?:is|are|was|were)?\s*(?:completely|totally|partially)?\s*blocked\b", "lang": "en", "conf": 0.90},
+        {"re": r"\bvehicles?\s+(?:cannot|can't)\s+pass\b", "lang": "en", "conf": 0.85},
         {"re": r"\btraffic\s+(?:at\s+)?standstill\b", "lang": "en", "conf": 0.85},
-        {"re": r"\bvehicles?\s+stuck\b", "lang": "en", "conf": 0.80},
+        {"re": r"\bvehicles?\s+(?:is|are|was|were|got)?\s*stuck\b", "lang": "en", "conf": 0.80},
         {"re": r"\btraffic\s+disruption\b", "lang": "en", "conf": 0.75},
         {"re": r"सड़क\s*बंद", "lang": "hi", "conf": 0.85},
         {"re": r"गाड़ियाँ\s*फंसी", "lang": "hi", "conf": 0.80},
@@ -175,7 +176,7 @@ VULNERABLE_PATTERNS: list[dict] = [
 
 TRAPPED_PATTERNS: list[dict] = [
     {"re": r"\btrapped\b", "lang": "en", "conf": 0.90},
-    {"re": r"\b(?:people|persons?|family|someone|residents?)\s+(?:are\s+)?stuck\b", "lang": "en", "conf": 0.85},
+    {"re": r"\b(?:people|persons?|family|families|someone|residents?)\s+(?:is|are|was|were|got)?\s*stuck\b", "lang": "en", "conf": 0.85},
     {"re": r"\bstranded\s+(?:people|persons?|residents?|family)\b|\bstranded\b(?!\s+(?:vehicles?|cars?|traffic))", "lang": "en", "conf": 0.80},
     {"re": r"\brescue\s+(?:needed|required|operation)\b", "lang": "en", "conf": 0.90},
     {"re": r"\bneed\s+rescue\b", "lang": "en", "conf": 0.90},
@@ -254,7 +255,7 @@ PEOPLE_PATTERNS: list[dict] = [
     {"re": r"\babout\s+(\d+)\s+residents?\b", "lang": "en", "category": "affected", "group": 1},
     {"re": r"\bapproximately\s+(\d+)\s+residents?\b", "lang": "en", "category": "nearby", "group": 1},
     {"re": r"\b(\d+)\s+(?:families|households?)\s+affected\b", "lang": "en", "category": "affected", "group": 1},
-    {"re": r"\b(\d+)\s+residents?\s+(?:are\s+)?affected\b", "lang": "en", "category": "affected", "group": 1},
+    {"re": r"\b(\d+)\s+residents?\s+(?:is|are|was|were)?\s*affected\b", "lang": "en", "category": "affected", "group": 1},
 
     # Romanized Hindi
     {"re": r"\b(\d+)\s+log\s+(?:phase|phaas)\b", "lang": "hi-Latn", "category": "trapped", "group": 1},

@@ -603,6 +603,28 @@ export default function App() {
                         </div>
                       )
                     })()}
+
+                    {incidentDetail.location_conflict && (
+                      <div className="location-conflict-alert" style={{
+                        marginTop: '10px',
+                        padding: '8px 12px',
+                        background: 'rgba(245, 158, 11, 0.12)',
+                        border: '1px solid rgba(245, 158, 11, 0.35)',
+                        borderRadius: '6px',
+                        color: '#f59e0b',
+                        fontSize: '0.82rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                      }}>
+                        <span style={{ fontSize: '1rem' }}>⚠️</span>
+                        <span>
+                          <strong>Location Conflict Detected:</strong> GPS coordinates verified as primary resolved location, but report text implies{' '}
+                          <em>{incidentDetail.location_conflict_text || 'different location'}</em>
+                          {incidentDetail.location_conflict_distance_m ? ` (~${(incidentDetail.location_conflict_distance_m / 1000).toFixed(1)} km divergence).` : '.'}
+                        </span>
+                      </div>
+                    )}
                   </div>
 
                   {/* Deliberate Responder Action Controls */}
@@ -896,6 +918,24 @@ export default function App() {
                           <div className="doc-body-quote">
                             “{rep.raw_text}”
                           </div>
+
+                          {rep.location_conflict && (
+                            <div style={{
+                              margin: '6px 0',
+                              padding: '4px 8px',
+                              background: 'rgba(245, 158, 11, 0.10)',
+                              border: '1px solid rgba(245, 158, 11, 0.25)',
+                              borderRadius: '4px',
+                              color: '#fbbf24',
+                              fontSize: '0.78rem',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '6px',
+                            }}>
+                              <span>⚠️</span>
+                              <span><strong>Location Conflict:</strong> GPS differs from text location <em>{rep.location_conflict_text}</em></span>
+                            </div>
+                          )}
 
                           {rep.extractions?.length > 0 && (() => {
                             const formattedList = rep.extractions

@@ -55,6 +55,9 @@ class Report(Base):
     location_lat = Column(Float, nullable=True)
     location_lon = Column(Float, nullable=True)
     geo_confidence = Column(Float, default=0.0)
+    location_conflict = Column(Boolean, default=False)
+    location_conflict_text = Column(Text, nullable=True)
+    location_conflict_distance_m = Column(Float, nullable=True)
 
     # Relationships
     extractions = relationship("Extraction", back_populates="report", cascade="all, delete-orphan")
@@ -104,6 +107,9 @@ class Incident(Base):
     location_lat = Column(Float, nullable=True)
     location_lon = Column(Float, nullable=True)
     geo_confidence = Column(Float, default=0.0)
+    location_conflict = Column(Boolean, default=False)
+    location_conflict_text = Column(Text, nullable=True)
+    location_conflict_distance_m = Column(Float, nullable=True)
 
     # Timestamps
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))

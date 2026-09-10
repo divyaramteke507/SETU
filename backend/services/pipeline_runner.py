@@ -127,6 +127,9 @@ def run_pipeline(
                 rep.location_resolved = loc_res.location_id or loc_res.resolved_name
                 rep.location_lat = loc_res.latitude
                 rep.location_lon = loc_res.longitude
+            rep.location_conflict = getattr(loc_res, "location_conflict", False) or False
+            rep.location_conflict_text = getattr(loc_res, "location_conflict_text", None)
+            rep.location_conflict_distance_m = getattr(loc_res, "location_conflict_distance_m", None)
             # Pre-compute and store embedding once to avoid 190x redundant generation in pairwise comparisons
             if not rep.embedding:
                 from services.embedding_service import generate_embedding
@@ -236,6 +239,12 @@ def run_pipeline(
                         key = (c.contradiction_type, c.field, pair)
                         if key in human_resolutions:
                             c.resolution = human_resolutions[key]
+                # Update location conflict on merged incident
+                conflicting_reps = [r for r in all_inc_reps if getattr(r, "location_conflict", False)]
+                if conflicting_reps:
+                    target_inc.location_conflict = True
+                    target_inc.location_conflict_text = getattr(conflicting_reps[0], "location_conflict_text", None)
+                    target_inc.location_conflict_distance_m = getattr(conflicting_reps[0], "location_conflict_distance_m", None)
                 inc_contrs = db.query(Contradiction).filter(Contradiction.incident_id == target_inc.id).all()
                 assessment = assess_incident(target_inc.id, all_inc_reps, inc_contrs, extractions_by_report=ext_map_all)
                 persist_incident_assessment(db, assessment)
@@ -267,6 +276,9 @@ def run_pipeline(
                     location_lat=rep.location_lat,
                     location_lon=rep.location_lon,
                     geo_confidence=rep.geo_confidence or 0.0,
+                    location_conflict=getattr(rep, "location_conflict", False) or False,
+                    location_conflict_text=getattr(rep, "location_conflict_text", None),
+                    location_conflict_distance_m=getattr(rep, "location_conflict_distance_m", None),
                 )
                 db.add(new_inc)
                 db.flush()

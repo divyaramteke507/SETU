@@ -150,6 +150,9 @@ def _format_report_out(rep: Report, match_score: Optional[float] = None) -> Repo
         geo_confidence=rep.geo_confidence or 0.0,
         processed=rep.processed or False,
         match_score=match_score,
+        location_conflict=getattr(rep, "location_conflict", False) or False,
+        location_conflict_text=getattr(rep, "location_conflict_text", None),
+        location_conflict_distance_m=getattr(rep, "location_conflict_distance_m", None),
         extractions=exts,
     )
 
@@ -298,6 +301,18 @@ def _format_incident_detail(inc: Incident, db: Session) -> IncidentDetailOut:
         related_incident_ids=related_ids,
         reports=formatted_reports,
         audit_logs=formatted_audits,
+        location_conflict=(
+            any(getattr(r, "location_conflict", False) for r in raw_reports)
+            or (getattr(inc, "location_conflict", False) or False)
+        ),
+        location_conflict_text=(
+            next((getattr(r, "location_conflict_text", None) for r in raw_reports if getattr(r, "location_conflict", False)), None)
+            or getattr(inc, "location_conflict_text", None)
+        ),
+        location_conflict_distance_m=(
+            next((getattr(r, "location_conflict_distance_m", None) for r in raw_reports if getattr(r, "location_conflict", False)), None)
+            or getattr(inc, "location_conflict_distance_m", None)
+        ),
     )
 
 

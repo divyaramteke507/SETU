@@ -431,6 +431,7 @@ _STRUCTURAL_INTACT_RE = re.compile(
 # Patterns for access/road-state opposing claims (handled under HAZARD_STRUCTURAL)
 _ROAD_BLOCKED_RE = re.compile(
     r"\b(?:completely\s+blocked|road\s+(?:is\s+)?(?:completely\s+)?blocked|traffic\s+at\s+standstill|"
+    r"vehicles?\s+(?:cannot|can't)\s+pass|"
     r"सड़क\s*बंद|road\s+block(?:ed)?|sadak\s+band)\b",
     re.IGNORECASE,
 )

@@ -6,32 +6,27 @@ Final independent verification of all 8 checklist items prior to freezing P1–P
 
 ## 1. Test Count Reconciliation
 
-- **Command executed**: `venv\Scripts\pytest.exe test_phase1.py tests/ --collect-only -q`
-- **Total collected**: **449** items
-- **Command executed**: `venv\Scripts\pytest.exe test_phase1.py tests/ -v --tb=short`
-- **Passed**: **448**
-- **Skipped**: **1**
+- **Authoritative Command executed**: `.\backend\venv\Scripts\python.exe -m pytest backend/tests/ --collect-only -q`
+- **Total collected**: **439** items across all 10 test modules in `backend/tests/`
+- **Full regression command executed**: `.\backend\venv\Scripts\python.exe -m pytest backend/tests/ -q`
+- **Passed**: **439**
+- **Skipped**: **0**
 - **Failed**: **0**
-- **Exact skipped test**: 
-  `tests/test_responder_api.py::TestPhase8AuditIntegrity::test_failed_split_reassessment_rolls_back_transaction`
-  - *Reason for skip*: Line 878 contains `if len(links) < 2: pytest.skip("Not enough reports in target incident")`. Because preceding tests in `test_responder_api.py` split reports from `INC-001` on the shared test fixture session without reseeding, `INC-001` has only 1 report left by the time this test runs, intentionally triggering the skip.
-- **Test delta compared to 438 baseline**:
-  - Baseline was **438** tests (**437 passed, 1 skipped** = 438 collected).
-  - Added: Exactly **11** regression tests in `tests/test_audit_fixes.py`:
-    - `TestC1ReprocessDuplicateMembership::test_reprocess_no_dual_membership_after_verify`
-    - `TestC1ReprocessDuplicateMembership::test_reprocess_preserves_verified_incident_and_members`
-    - `TestC1ReprocessDuplicateMembership::test_reprocess_non_preserved_reports_get_new_incidents`
-    - `TestC1ReprocessDuplicateMembership::test_reprocess_no_report_in_two_incidents`
-    - `TestH2IncrementalRelatedIncident::test_new_report_creates_related_incident_link`
-    - `TestH2IncrementalRelatedIncident::test_merged_report_does_not_create_spurious_related_links`
-    - `TestH3SplitIDFormat::test_split_produces_canonical_id_with_13_existing`
-    - `TestH3SplitIDFormat::test_split_id_format_ten_plus_incidents`
-    - `TestH3SplitIDFormat::test_old_format_would_have_been_wrong`
-    - `TestH4ContradictionResolutionPreservation::test_resolution_preserved_after_new_report_merges`
-    - `TestH4ContradictionResolutionPreservation::test_stale_contradiction_disappears_naturally`
-  - Removed: **0**
-  - Renamed: **0**
-  - New total: **438 + 11 = 449 collected (448 passed, 1 skipped)**.
+- **Warnings**: 2 (FastAPI testclient Starlette deprecation warnings)
+- **Module Breakdown (10 modules)**:
+  - `test_audit_fixes.py`: 15 tests (audit integrity, split IDs, reprocess idempotency)
+  - `test_clustering.py`: 37 tests (complete linkage, spatio-temporal clustering)
+  - `test_contradiction_detector.py`: 33 tests (physical contradictions, polarity)
+  - `test_extractor.py`: 84 tests (multilingual entity/intent extraction)
+  - `test_incident_assessment.py`: 60 tests (severity, confidence, priority formulas)
+  - `test_location_resolver.py`: 55 tests (gazetteer matching, GPS precedence, fallbacks)
+  - `test_matching.py`: 42 tests (4-factor composite similarity)
+  - `test_normalizer.py`: 39 tests (text cleaning, romanized Hindi transliteration)
+  - `test_p0_hardening.py`: 19 tests (P0-1 duplicate guard, P0-2 contradiction deduplication, P0-4 location conflict, P0-5 English grammar)
+  - `test_responder_api.py`: 55 tests (API endpoints, responder actions, audit trail)
+  - **TOTAL**: **439 passed, 0 skipped**
+- **P0 Test Suite**: `.\backend\venv\Scripts\python.exe -m pytest backend/tests/test_p0_hardening.py -q` -> **19 passed** in 11.74s
+- Both `test_audit_fixes.py` (15 tests) and `test_p0_hardening.py` (19 tests) are active, present, and counted.
 
 ---
 
@@ -127,10 +122,10 @@ Executed canonical 20-report dataset on empty database:
 
 ## 7. Full Regression Results
 
-- **Backend Pytest**: `448 passed, 1 skipped in 21.44s`
+- **Backend Pytest**: `439 passed, 0 skipped, 2 warnings in 30.11s`
 - **Backend Compileall**: `python -m compileall config.py database.py models.py schemas.py main.py services/ routers/ tests/` -> 0 errors (Exit code 0)
 - **Frontend Oxlint**: `npm run lint` -> 0 errors, 0 warnings (104 rules checked)
-- **Frontend Build**: `npm run build` -> built in 125ms (Exit code 0)
+- **Frontend Build**: `npm run build` -> built in 198ms (Exit code 0)
 - **Status**: **PASS**
 
 ---
@@ -144,4 +139,22 @@ Executed canonical 20-report dataset on empty database:
   4. `backend/tests/test_audit_fixes.py` (11 regression tests)
 - Removed temporary scratch files: `_h2_debug.db`, `_cluster_test.db`, `_cluster_test_script.py`, `_verify_h4.py`, `_verify_demo.py`.
 - No unintended modifications, no leaked temporary files.
+- **Status**: **PASS**
+
+---
+
+## 9. Red-Team P0 Hardening Verification
+
+All five P0 fixes identified in the fresh red-team review have been implemented and verified:
+1. **P0-1 Duplicate Corroboration Guard**: Near-duplicate reports are clustered into corroboration units ($\ge 0.95$ cosine similarity, complete linkage). 3 identical forwarded reports across 3 channels contribute 1 corroboration unit and 1 effective source channel, preventing duplicate forwarding from creating Critical priority.
+2. **P0-2 Contradiction Deduplication for Consistency**: Distinct disagreements are canonicalized by `(c_type, c_field, (val_a, val_b))` for the confidence consistency penalty. 3 "blocked" vs 1 "passable" counts as 1 distinct disagreement (`cs_val = 0.75`), while all pairwise contradiction records remain intact for UI inspection.
+3. **P0-3 Empirical Demo Reconciliation**: Live execution on 20 reports confirms 20 reports $\rightarrow$ 13 candidate incidents $\rightarrow$ 1 contradiction (`CONTR-INC-006-R009-R010-LOC` on `location_resolved`). Documentation reconciled.
+4. **P0-4 GPS vs Text Location Conflict**: When GPS is valid, gazetteer distance is checked. If $\ge 2000$m, `location_conflict = True` is set with distance divergence and explanation, while GPS retains precedence. Amber warning surfaced in UI.
+5. **P0-5 English Grammar Extraction**: Regexes in `INCIDENT_TYPE_PATTERNS` and `TRAPPED_PATTERNS` updated to support `is/are/was/were/got stuck`, `is/are/was/were blocked`, and `vehicles cannot pass` with strict evidence grounding.
+
+- **P0 Test Suite**: `19 passed in 12.24s` (`backend/tests/test_p0_hardening.py`)
+- **Full Backend Pytest**: `439 passed, 2 warnings in 29.49s`
+- **Frontend Oxlint**: `0 errors, 0 warnings`
+- **Frontend Build**: `✓ built in 194ms`
+- **Package Status**: `release/SETU-SIH-DEMO.zip` regenerated successfully (excluded from Git)
 - **Status**: **PASS**

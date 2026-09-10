@@ -57,16 +57,16 @@ SETU provides a self-contained, offline-first Windows evaluation build that runs
    20 Raw Reports  ──▶  13 Candidate Incidents  ──▶  4 Named Zones + GPS/Outskirts
    ```
 4. Check the live status metrics in the ribbon:
-   - **Critical (85–100):** 1 incident (`INC-006`)
-   - **High (70–84):** 3 incidents (`INC-001`, `INC-002`, `INC-003`)
-   - **Medium (40–69):** 8 incidents
-   - **Low (0–39):** 1 incident (`INC-013`)
-   - **Conflicts Flagged:** 1 physical contradiction
+   - **Critical (85–100):** 1 incident (`INC-011`, Priority 91.89)
+   - **High (70–84):** 3 incidents (`INC-004`, `INC-005`, `INC-006`)
+   - **Medium (40–69):** 8 incidents (`INC-001`, `INC-002`, `INC-003`, `INC-007`, `INC-008`, `INC-010`, `INC-012`, `INC-013`)
+   - **Low (0–39):** 1 incident (`INC-009`, Priority 37.57)
+   - **Conflicts Flagged:** 1 physical contradiction (`INC-006`: location resolution conflict)
 
 ---
 
 ### 3. Inspect Candidate Incidents & Explainable Scoring
-1. In the left **Incident Queue**, click **`INC-006`** (Rescue Needed — Kotwali).
+1. In the left **Incident Queue**, click **`INC-006`** (Rescue Needed — Kotwali, Priority 85).
 2. Look at the **Assessment Showcase** in the center workspace:
    - **Severity (100/100):** Base type score + trapped bonus ($+15$) + vulnerable bonus ($+10$).
    - **Confidence (75%):** 5-factor corroboration breakdown (source count, diversity, consistency, extraction quality, info type).
@@ -78,8 +78,8 @@ SETU provides a self-contained, offline-first Windows evaluation build that runs
 
 ### 4. Review the Physical Contradiction Alert
 1. On **`INC-006`**, observe the prominent amber **Active Contradiction Alert Panel**.
-2. The panel contrasts **Side A** (Report R009: 2 ft water, receding) against **Side B** (Report R010: 6 ft water, rising, trapped residents).
-3. Responders are explicitly alerted to the physical contradiction so operational decisions are never made on conflicting assumptions.
+2. The panel contrasts **Side A** (Report R009: text location near Kotwali Thana) against **Side B** (Report R010: field worker direct GPS coordinates).
+3. Responders are explicitly alerted to the location contradiction so operational decisions are never made on conflicting geographic assumptions.
 
 ---
 

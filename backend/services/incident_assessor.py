@@ -62,6 +62,11 @@ from schemas import (
     SeverityBreakdown,
     SeverityModifier,
 )
+from services.embedding_service import (
+    cosine_similarity,
+    deserialize_embedding,
+    generate_embedding,
+)
 from services.extractor import extract_report
 from services.normalizer import normalize_text
 
@@ -192,6 +197,138 @@ def _normalize_contradictions(contradictions: Optional[Union[Sequence[Any], Any]
             deduped.append(c)
 
     return deduped
+
+
+def _count_distinct_disagreements(contradictions: Optional[Union[Sequence[Any], Any]]) -> tuple[int, list[Any]]:
+    """
+    P0-2: Deduplicate contradiction records into distinct underlying disagreements
+    for confidence consistency penalty calculation, while preserving all raw
+    normalized contradiction records for responder review and evidence displays.
+
+    Disagreement identity:
+      (contradiction_type, field, tuple(sorted([norm_side_a, norm_side_b])))
+
+    Ordering of sides is canonicalized so A/B and B/A represent the same disagreement.
+    Genuinely different fields, types, or opposing states remain distinct.
+    """
+    raw_deduped = _normalize_contradictions(contradictions)
+    if not raw_deduped:
+        return 0, []
+
+    distinct_keys: set[tuple] = set()
+    for c in raw_deduped:
+        c_type = str(
+            getattr(c, "contradiction_type", "")
+            or (c.get("contradiction_type") if isinstance(c, dict) else "")
+            or ""
+        ).lower().strip()
+        c_field = str(
+            getattr(c, "field", "")
+            or (c.get("field") if isinstance(c, dict) else "")
+            or ""
+        ).lower().strip()
+
+        side_a = getattr(c, "side_a", None) or (c.get("side_a") if isinstance(c, dict) else None)
+        side_b = getattr(c, "side_b", None) or (c.get("side_b") if isinstance(c, dict) else None)
+
+        val_a = getattr(side_a, "value", None) if side_a else None
+        if val_a is None:
+            val_a = getattr(c, "side_a_value", None) or (c.get("side_a_value") if isinstance(c, dict) else None)
+
+        val_b = getattr(side_b, "value", None) if side_b else None
+        if val_b is None:
+            val_b = getattr(c, "side_b_value", None) or (c.get("side_b_value") if isinstance(c, dict) else None)
+
+        norm_a = str(val_a).lower().strip() if val_a is not None else ""
+        norm_b = str(val_b).lower().strip() if val_b is not None else ""
+
+        canonical_values = tuple(sorted([norm_a, norm_b]))
+        key = (c_type, c_field, canonical_values)
+        distinct_keys.add(key)
+
+    return len(distinct_keys), raw_deduped
+
+
+def _cluster_corroboration_units(
+    reports: Sequence[Any],
+    cosine_threshold: float = 0.95,
+) -> list[list[Any]]:
+    """
+    P0-1: Cluster reports within an incident into corroboration units to prevent duplicate
+    or forwarded copies of the same underlying message from inflating source count and
+    source diversity in the confidence calculation.
+
+    Near-duplicate criteria:
+    - Conservative cosine similarity >= 0.95 using normalized report embeddings.
+    - Complete-linkage clustering: a report is only grouped into an existing unit if it
+      has similarity >= 0.95 with ALL members of that unit (preventing runaway transitivity).
+    - If embeddings are unavailable, falls back safely to exact normalized text equality
+      or distinct units, preserving existing behavior without inventing similarity.
+    - Reports and their channels/evidence are NEVER deleted or dropped; this is strictly
+      an evidence-fusion confidence guard.
+    """
+    if not reports:
+        return []
+
+    report_items = []
+    for rep in reports:
+        norm_text = _get_report_attr(rep, "normalized_text", "")
+        if not norm_text:
+            raw_text = _get_report_attr(rep, "raw_text", "")
+            norm_text = normalize_text(raw_text) if raw_text else ""
+
+        emb = None
+        raw_emb = _get_report_attr(rep, "embedding", None)
+        if raw_emb:
+            emb = deserialize_embedding(raw_emb)
+
+        if emb is None and norm_text:
+            try:
+                emb = generate_embedding(norm_text)
+            except Exception:
+                emb = None
+
+        report_items.append({
+            "report": rep,
+            "norm_text": norm_text.strip().lower(),
+            "embedding": emb,
+        })
+
+    units: list[list[dict]] = []
+
+    for item in report_items:
+        placed = False
+        item_emb = item["embedding"]
+        item_text = item["norm_text"]
+
+        for unit in units:
+            # Complete-linkage check: item must be near-duplicate with EVERY member of the unit
+            matches_all = True
+            for member in unit:
+                mem_emb = member["embedding"]
+                mem_text = member["norm_text"]
+
+                is_duplicate = False
+                if item_emb and mem_emb:
+                    sim = cosine_similarity(item_emb, mem_emb)
+                    if sim >= cosine_threshold:
+                        is_duplicate = True
+                elif item_text and mem_text and item_text == mem_text:
+                    is_duplicate = True
+
+                if not is_duplicate:
+                    matches_all = False
+                    break
+
+            if matches_all:
+                unit.append(item)
+                placed = True
+                break
+
+        if not placed:
+            units.append([item])
+
+    return [[item["report"] for item in u] for u in units]
 
 
 # ---------------------------------------------------------------------------
@@ -421,41 +558,78 @@ def calculate_confidence(
     num_reports = len(sorted_reports)
 
     # -----------------------------------------------------------------------
+    # P0-1: Near-duplicate Corroboration Guard
+    # Cluster reports into corroboration units (threshold >= 0.95 cosine similarity).
+    # -----------------------------------------------------------------------
+    corroboration_units = _cluster_corroboration_units(sorted_reports, cosine_threshold=0.95)
+    effective_report_count = len(corroboration_units)
+
+    # -----------------------------------------------------------------------
     # Component A: Source Count (25%)
     # -----------------------------------------------------------------------
-    if num_reports >= 4:
+    if effective_report_count >= 4:
         sc_val = CONFIDENCE_SOURCE_COUNT_POLICY[4]
     else:
-        sc_val = CONFIDENCE_SOURCE_COUNT_POLICY.get(num_reports, 0.40)
-    sc_detail = f"{num_reports} report(s) -> discrete score {sc_val:.2f}"
+        sc_val = CONFIDENCE_SOURCE_COUNT_POLICY.get(effective_report_count, 0.40)
+
+    if effective_report_count < num_reports:
+        duplicates_grouped = num_reports - effective_report_count
+        sc_detail = (
+            f"{effective_report_count} corroboration unit(s) "
+            f"(from {num_reports} report(s), {duplicates_grouped} duplicate copy/copies grouped) "
+            f"-> discrete score {sc_val:.2f}"
+        )
+    else:
+        sc_detail = f"{num_reports} report(s) -> discrete score {sc_val:.2f}"
 
     # -----------------------------------------------------------------------
     # Component B: Source Diversity (20%)
+    # Genuinely different reports remain separate corroboration units even if
+    # on the same channel. Repeated forwarded copies of the same underlying
+    # observation belong to 1 unit and represent at most 1 channel.
     # -----------------------------------------------------------------------
-    unique_sources: set[str] = set()
-    for rep in sorted_reports:
-        src = str(_get_report_attr(rep, "source", "unknown")).lower().strip()
+    effective_sources: set[str] = set()
+    for unit in corroboration_units:
+        # Primary source channel representing this corroboration unit
+        unit_primary_rep = unit[0]
+        src = str(_get_report_attr(unit_primary_rep, "source", "unknown")).lower().strip()
         if src:
-            unique_sources.add(src)
+            effective_sources.add(src)
 
-    num_sources = len(unique_sources)
-    if num_sources >= 3:
+    num_effective_sources = len(effective_sources)
+    if num_effective_sources >= 3:
         sd_val = CONFIDENCE_SOURCE_DIVERSITY_POLICY[3]
     else:
-        sd_val = CONFIDENCE_SOURCE_DIVERSITY_POLICY.get(num_sources, 0.40)
-    sorted_src_names = ", ".join(sorted(unique_sources)) if unique_sources else "none"
-    sd_detail = f"{num_sources} unique source channel(s) ({sorted_src_names}) -> discrete score {sd_val:.2f}"
+        sd_val = CONFIDENCE_SOURCE_DIVERSITY_POLICY.get(num_effective_sources, 0.40)
+    sorted_src_names = ", ".join(sorted(effective_sources)) if effective_sources else "none"
+
+    if effective_report_count < num_reports:
+        sd_detail = (
+            f"{num_effective_sources} effective source channel(s) ({sorted_src_names}) "
+            f"across {effective_report_count} corroboration unit(s) -> discrete score {sd_val:.2f}"
+        )
+    else:
+        sd_detail = f"{num_effective_sources} unique source channel(s) ({sorted_src_names}) -> discrete score {sd_val:.2f}"
 
     # -----------------------------------------------------------------------
     # Component C: Consistency / Contradictions (25%)
+    # P0-2: Use distinct disagreement count for confidence consistency penalty,
+    # while preserving all raw pairwise contradiction records for UI review.
     # -----------------------------------------------------------------------
-    norm_contradictions = _normalize_contradictions(contradictions)
+    distinct_disagreements, norm_contradictions = _count_distinct_disagreements(contradictions)
     num_contradictions = len(norm_contradictions)
-    if num_contradictions >= 4:
+    if distinct_disagreements >= 4:
         cs_val = CONFIDENCE_CONSISTENCY_POLICY[4]
     else:
-        cs_val = CONFIDENCE_CONSISTENCY_POLICY.get(num_contradictions, 0.00)
-    cs_detail = f"{num_contradictions} contradiction(s) detected -> discrete score {cs_val:.2f}"
+        cs_val = CONFIDENCE_CONSISTENCY_POLICY.get(distinct_disagreements, 0.00)
+
+    if num_contradictions > distinct_disagreements:
+        cs_detail = (
+            f"{distinct_disagreements} distinct disagreement(s) "
+            f"(across {num_contradictions} pairwise contradiction record(s)) -> discrete score {cs_val:.2f}"
+        )
+    else:
+        cs_detail = f"{distinct_disagreements} contradiction(s) detected -> discrete score {cs_val:.2f}"
 
     # -----------------------------------------------------------------------
     # Component D: Extraction Quality (15%)

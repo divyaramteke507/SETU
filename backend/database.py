@@ -2,7 +2,7 @@
 SETU Database — SQLite setup and session management.
 """
 
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker, declarative_base
 
 from config import DATABASE_URL
@@ -30,6 +30,22 @@ def init_db():
         AuditLog,
     )
     Base.metadata.create_all(bind=engine)
+
+    # Safe additive column migration for existing SQLite databases
+    with engine.connect() as conn:
+        for table, col, col_type in [
+            ("reports", "location_conflict", "BOOLEAN DEFAULT 0"),
+            ("reports", "location_conflict_text", "TEXT"),
+            ("reports", "location_conflict_distance_m", "FLOAT"),
+            ("incidents", "location_conflict", "BOOLEAN DEFAULT 0"),
+            ("incidents", "location_conflict_text", "TEXT"),
+            ("incidents", "location_conflict_distance_m", "FLOAT"),
+        ]:
+            try:
+                conn.execute(text(f"ALTER TABLE {table} ADD COLUMN {col} {col_type}"))
+                conn.commit()
+            except Exception:
+                pass
 
 
 def get_db():

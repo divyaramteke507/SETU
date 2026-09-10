@@ -10,7 +10,7 @@
 
 > [!IMPORTANT]
 > **Source Code vs. Zero-Install Demo Distribution**
-> - **This GitHub Repository** contains the complete source code, test suite (448+ automated tests), FastAPI backend, React 19 frontend, and build utilities.
+> - **This GitHub Repository** contains the complete source code, test suite (439 automated tests), FastAPI backend, React 19 frontend, and build utilities.
 > - **For Judges & Evaluators:** Do NOT download the raw GitHub source ZIP expecting a plug-and-play build. GitHub source archives do not include the pre-compiled frontend bundle, offline embedding model, or portable Python runtime. Instead, use the official zero-install demonstration package linked below.
 
 ---
@@ -159,13 +159,13 @@ The preloaded Rampur urban flood dataset produces the following verified, determ
 |---|---|---|
 | **Raw Reports Ingested** | **20** | Multi-channel inputs (WhatsApp, SMS, Field Worker, Web) |
 | **Candidate Incidents Formed** | **13** | Redundant and correlated reports fused into distinct incidents |
-| **Physical Contradictions Surfaced** | **1** | Conflicting water-depth reports in Kotwali flagged for human review |
+| **Physical Contradictions Surfaced** | **1** | Location resolution conflict in Kotwali (`INC-006`: R009 vs R010) flagged for human review |
 | **Geographic Groupings** | **5** | 4 Named Response Zones + 1 GPS/Outskirts grouping |
 | **Named Response Zones** | **4** | Civil Lines, Kotwali, Bilaspur Chowk, Naya Mohalla |
-| **Critical Incidents (85–100)** | **1** | Basement flooding with trapped residents (`INC-006`) |
-| **High Incidents (70–84)** | **3** | Severe structural damage and major road submergence |
-| **Medium Incidents (40–69)** | **8** | Localized waterlogging and minor power disruptions |
-| **Low Incidents (0–39)** | **1** | Isolated low-urgency status check |
+| **Critical Incidents (85–100)** | **1** | Boundary wall collapse risk with trapped residents (`INC-011`, Priority 91.89) |
+| **High Incidents (70–84)** | **3** | Severe structural damage and ground-floor submergence (`INC-004`, `INC-005`, `INC-006`) |
+| **Medium Incidents (40–69)** | **8** | Localized waterlogging and minor road disruptions (`INC-001`, `INC-002`, `INC-003`, `INC-007`, `INC-008`, `INC-010`, `INC-012`, `INC-013`) |
+| **Low Incidents (0–39)** | **1** | Isolated low-urgency status check (`INC-009`, Priority 37.57) |
 
 ---
 
@@ -241,7 +241,7 @@ The project includes a comprehensive test suite covering normalizers, extractors
 cd backend
 venv\Scripts\pytest.exe tests/ -v
 ```
-*Current benchmark: 448 passing tests, 1 intentionally skipped fixture test.*
+*Current benchmark: 439 passing tests (100% passing across 10 test modules, 0 skipped).*
 
 ### 4. Assembling the Zero-Install Release Package
 To build the standalone zero-install Windows demo package from source:
